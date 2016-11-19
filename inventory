@@ -1,0 +1,9 @@
+# This is the inventory. It lists the servers that ansible manages
+
+localhost	ansible_connection=local
+
+
+[ubu_test]
+ubu1
+ubu2
+ubu3

@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+
+# HTTP
+server {
+	listen		80;
+
+	server_name	ubuntu-berlin.de {{ansible_hostname}}.example.org;
+
+	access_log	/var/log/nginx/ubuntu-berlin-access.log;
+	error_log	/var/log/nginx/ubuntu-berlin-error.log;
+
+	root		/srv/www/;
+	index		index.html;
+
+}

@@ -1,0 +1,4 @@
+# Configuration variables for all hosts
+---
+
+my_ssh_key_path: "{{'~/.ssh/id_rsa.pub'}}"

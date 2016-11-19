@@ -1,0 +1,48 @@
+---
+# tasks file for ubu_test
+
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Deploy site conf
+  template:
+    src: etc/nginx/sites-available/ubuntu-berlin
+    dest: /etc/nginx/sites-available/ubuntu-berlin
+    owner: root
+    group: root
+    mode: 0644
+  notify: Reload nginx
+
+- name: Activate site conf
+  file:
+    state: link
+    path: /etc/nginx/sites-enabled/ubuntu-berlin
+    src: /etc/nginx/sites-available/ubuntu-berlin
+  notify: Reload nginx
+
+- name: Remove default nginx conf file
+  file:
+    state: absent
+    path: /etc/nginx/sites-enabled/default
+  notify: Reload nginx
+
+- name: Create /srv/www
+  file:
+    state: directory
+    path: /srv/www    
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Deploy index.html
+  copy:
+    src: srv/www/
+    dest: /srv/www/
+    #directory_mode: 0755
+    owner: root
+    group: root
+    mode: 0644
+  notify: Reload nginx
+    

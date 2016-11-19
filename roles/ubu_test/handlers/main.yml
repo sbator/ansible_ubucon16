@@ -1,0 +1,7 @@
+---
+# handlers file for ubu_test
+
+- name: Reload nginx
+  service:
+    name: nginx
+    state: reloaded

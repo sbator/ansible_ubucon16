@@ -1,0 +1,31 @@
+---
+# This playbook deployes some personal configuration files
+
+# Since we do not have DNS here we need to get the container IPs first
+
+- name: Get the IPs of the containers
+  hosts: localhost
+  become: false
+  tasks:
+  - name: Get the IPs of the containers
+    shell: 'lxc info {{item}}|grep "eth0:\sinet\s" |cut -d "	" -f 3'
+    register: container_ips
+    with_items: "{{groups['ubu_test']}}"
+
+  - name: Register the IPs in the inventory
+    add_host:
+      name: "{{ item.item }}"
+      ansible_host: "{{ item.stdout }}"
+      group: ubu_test
+    with_items: "{{ container_ips.results }}"
+
+# Now we call the role that deploys the configuration files.
+# You can find it under roles/my_conf. The main file is tasks/main.yml
+
+- name: Deploy personal configuration
+  hosts: ubu_test
+  user: root
+  become: false
+  roles:
+          - role: my_conf
+            tags: ['role::my_conf']

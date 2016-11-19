@@ -1,0 +1,64 @@
+---
+# This creates the test environment, by provisioning some lxd containers
+
+- name: Setup the test environment (this may take a while)
+  hosts: localhost
+  become: false
+  tasks:
+  - name: Create LXD container
+    lxd_container:
+      name: "{{item}}"
+      state: started
+      source:
+        alias: ubuntu/xenial/amd64
+        type: image
+        mode: pull
+        server: https://images.linuxcontainers.org
+        protocol: lxd
+        wait_for_ipv4_addresses: yes
+    with_items: "{{groups['ubu_test']}}"
+
+  - name: Wait for the containers to get IPs
+    pause:
+      seconds: 10
+
+  - name: Get the IPs of the containers
+    shell: 'lxc info {{item}}|grep "eth0:\sinet\s" |cut -d "	" -f 3'
+    register: container_ips
+    with_items: "{{groups['ubu_test']}}"
+
+  - name: Register the IPs in the inventory
+    add_host:
+      name: "{{ item.item }}"
+      ansible_host: "{{ item.stdout }}"
+      group: ubu_test
+    with_items: "{{ container_ips.results }}"
+
+# Since we can not use ansible in the containers yet (no ssh)
+# We do some low level magic with lxd.
+
+  - name: Install ssh, python and stuff in the containers
+    command: "lxc exec {{item}} -- apt-get -y install ssh python byobu htop"
+    with_items: "{{groups['ubu_test']}}"
+
+  - name: Create .ssh dir
+    command: "lxc exec {{item}} -- mkdir /root/.ssh"
+    with_items: "{{groups['ubu_test']}}"
+    ignore_errors: yes
+
+  - name: Push ssh key to containers
+    command: "lxc file push {{my_ssh_key_path}} {{item}}/root/.ssh/authorized_keys --mode=0600 --uid=0"
+    with_items: "{{groups['ubu_test']}}"
+
+# The location of the ssh key is set in group_vars/all.yml. If your 
+# key is in a nonstandard location set it there.
+
+# Now call the role that installs the webserver
+
+- name: Configure the test containers
+  hosts: ubu_test
+  become: true
+  user: root
+  roles:
+  - role: ubu_test
+    tags: ['role::ubu_test']

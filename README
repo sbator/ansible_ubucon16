@@ -1,0 +1,44 @@
+These are the example files for my ansible talk at the Ubucon 2016
+
+The environment sets up three lxd container that serve as hosts. Using lxd
+means that the ansible playbooks run as local user and do not change anything
+on the host (except creating the containers). To run them however lxd and
+ansible >2.2 are needed.
+
+
+
+Setting up test environment
+
+The lxd module needs at least ansible version 2.2. At the moment this means we
+need to install it via the ansible PPA.
+	sudo add-apt-repository ppa:ansible/ansible
+	sudo apt-get update
+	sudo apt-get install ansible
+
+LXD is requiered and you need to configure an lxd network.
+	sudo apt install lxd
+	sudo dpkg-reconfigure -p medium lxd
+	# Answer the questions and create an NATed IPv4 network for lxd
+	# If you are using a Firewall, it might need further configuration
+	# to allow traffic from the containers
+
+Run the playbooks
+
+There are two playbooks. `setup-env.yml` creates the containers and provisions
+them with a basic webserver. `my_config.yml` deploys some example
+configuration files to them. You need to run ansible in the root of the git
+checkout.
+
+	ansible-playbook -i inventory setup-env.yml
+	ansible-playbook -i inventory my-config.yml
+
+
+Clean up
+
+The lxd container will keep running in the background. If you no longer need
+them, you can stop or delete them.
+
+	lxc stop ubu{1..3}
+	lxc destroy ubu{1..3}
+
+Have fun

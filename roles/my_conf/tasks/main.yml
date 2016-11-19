@@ -1,0 +1,36 @@
+---
+# tasks file for sbator_conf
+
+- name: Enable byobu
+  command: byobu-enable
+  ignore_errors: yes
+
+- name: Deploy .vimrc
+  copy:
+    src: .vimrc
+    dest: ~/.vimrc
+
+- name: Deploy .bash_aliases
+  copy: 
+    src: .bash_aliases
+    dest: ~/.bash_aliases
+
+- name: Append block to .bashrc
+  blockinfile:
+    dest: ~/.bashrc
+    block: |
+      # Set the Editor for sudo
+      export SUDO_EDITOR=/usr/bin/vim.basic
+      
+      # initalize autojump
+      source /usr/share/autojump/autojump.sh
+
+- name: Create htop conf dir
+  file:
+    path: '~/.config/htop'
+    state: 'directory'
+
+- name: Deploy htoprc
+  copy:
+    src: .config/htop/htoprc
+    dest: ~/.config/htop/htoprc
