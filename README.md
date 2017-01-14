@@ -48,6 +48,9 @@ lxc stop ubu{1..3}
 lxc destroy ubu{1..3}
 ```
 
+## License
+
+The code in this repository is licensed under GPLv3 or higher.
 
 Have fun
 
